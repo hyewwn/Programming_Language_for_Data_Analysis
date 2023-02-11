@@ -1,0 +1,516 @@
+---
+title: "R을 이용한 데이터 시각화"
+author: "유혜원"
+date: "2020-12-29"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+[통계청 홈페이지](https://kosis.kr/statisticsList/statisticsListIndex.do?menuId=M_01_01&vwcd=MT_ZTITLE&parmTabId=M_01_01#SelectStatsBoxDiv) 및 [공공데이터포털](https://www.data.go.kr/index.do)를 통해 얻은 데이터를 바탕으로,
+
+1) 대한민국 주택소유 현황
+
+2) DMB재난경보 발령 현황 분석
+
+3) 중국/일본과의 무역 현황 분석
+
+4) 근로복지공단 소속병원 연도별 건강진단 현황 분석
+
+5) 근로복지공단 근로복지지원 현황
+
+6) 2014년 대덕구 보궐선거 개표결과 분석
+
+
+위 주제들에 대해 10개의 그래프를 작성하고, 분석하였다.
+
+
+### 패키지 적용 및 옵션 설정
+
+그래프를 그리기 위해 몇가지 패키지를 설치 및 적용하고, 옵션을 설정하여야 한다.
+```{r}
+options(scipen=999)  # turn off scientific notation like 1e+06
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(tidyr)
+library(treemap)
+```
+
+dplyr은 그래프를 그리기 위해 데이터를 원하는 형태로 바꾸기 위해서 필요하고, tidyverse(ggplot2포함)는 그래프를 실제로 그리기 위해서 필요하다. gridExtra는 여러 그래프를 한번에 표현하고자 할 때 필요하다.
+
+또한, 위의 옵션은 숫자 표현이 과학적 표기법이 아니라 일반적인 숫자 형태로 표현되도록 하기 위한 것이다.
+
+
+
+#### **Graph1~2. 연도별, 연령별 주택소유 가구수 비율에 대한 분석**
+
+
+이 분석을 위한 데이터는 *통계청 홈페이지*에서 다운받았다.
+```{r}
+households <- read.csv(file="Percentage of households owning a house.csv", header=TRUE)
+```
+
+연령별 주택소유 가구수 비율에 대해 연도별로 그래프를 그린 뒤 각각을 비교해보았다.
+
+
+```{r, eval=T, echo=T}
+households_total <- households[households$주택자산.10분위별=="총계",]
+
+str(households)
+
+g1 <- ggplot(households_total, aes(x=연령대별 , y=X2015.년, group=1)) +
+      geom_point() +
+      scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+      geom_line(linetype="dashed", col="blue", size=1) +
+      labs(title="2015년 연령대별 주택소유 가구수 비율",y="주택소유비율",x="연령대별",caption="통계청")
+
+g2 <- ggplot(households_total, aes(x=연령대별 , y=X2016.년, group=1)) +
+  geom_point() +
+  scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+  geom_line(linetype="dashed", col="blue", size=1) +
+  labs(title="2016년 연령대별 주택소유 가구수 비율",y="주택소유비율",x="연령대별",caption="통계청") 
+
+g3 <- ggplot(households_total, aes(x=연령대별 , y=X2017.년, group=1)) +
+  geom_point() +
+  scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+  geom_line(linetype="dashed", col="blue", size=1) +
+  labs(title="2017년 연령대별 주택소유 가구수 비율",y="주택소유비율",x="연령대별",caption="통계청")
+
+g4 <- ggplot(households_total, aes(x=연령대별 , y=X2018.년, group=1)) +
+  geom_point() +
+  scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+  geom_line(linetype="dashed", col="blue", size=1) +
+  labs(title="2018년 연령대별 주택소유 가구수 비율",y="주택소유비율",x="연령대별",caption="통계청")
+
+g5 <- ggplot(households_total, aes(x=연령대별 , y=X2019.년, group=1)) +
+  geom_point() +
+  scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+  geom_line(linetype="dashed", col="blue", size=1) +
+  labs(title="2019년 연령대별 주택소유 가구수 비율",y="주택소유비율",x="연령대별",caption="통계청")
+
+gridExtra::grid.arrange(g1,g2,g3,g4,g5, ncol=2, nrow=3)
+```
+
+
+그래프의 형태를 더욱 쉽게 파악할 수 있도록 하기 위해 간결한 선그래프로 표현한 뒤 파란색으로 색을 바꾸었다.
+
+**이 그래프를 통해 알 수 있는 내용은 다음과 같다.**
+
+> 위 그래프에서는 연령대별 주택소유 가구수 비율을 나타내고 있는데, 매년 그래프의 형태가 동일하다. 따라서, 위 그래프는 단기간에만 해당되는 형태가 아니라 장기간에 걸쳐서도 동일하게 적용될 수 있는 그래프임을 나타낸다. 각각의 형태를 살펴보면 주택소유비율이 나이가 들수록 점차 증가하다가 50대에 가장 높고 다시 점차 감소한다. 이를 통해 우리나라에서는 일반적으로 2~30대에 취업한 직후부터 돈을 모아 집을 구매한다는 보편적인 생각과 실제가 일치한다는 것을 알 수 있다.
+
+
+
+위와 동일한 데이터를 이용해, 연령대 및 분위별로 주택 소유 가구수 비율이 어떤 양상을 보이는지 그래프를 그려보았다.
+
+```{r, eval=T, echo=T}
+households_Nototal <- households[households$주택자산.10분위별!="총계",]
+
+ggplot(households_Nototal, aes(x=연령대별 , y=X2019.년, group=1)) +
+  geom_point(aes(col=주택자산.10분위별)) +
+  geom_line(aes(col =주택자산.10분위별, group=주택자산.10분위별)) + 
+  scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+  labs(title="2019년 연령대/분위별 주택소유 가구수 비율",y="주택 소유 가구수 비율",x="연령대별",caption="통계청") + 
+  scale_colour_brewer(palette= "Spectral") +
+  scale_y_continuous(breaks=seq(0,3,0.5),
+    labels=sprintf("%1.2f%%",seq(0,3,0.5)))
+```
+
+
+
+각 분위별로 연령대별 주택 소유 가구수 비율이 비슷한 양상을 보이는지, 다른 양상을 보이는지 한눈에 파악할 수 있도록 간결한 선그래프로 표현한 뒤 각각의 선그래프별로 색을 달리하였다.
+
+
+**이 그래프를 통해 알 수 있는 내용은 다음과 같다.**
+
+>이 그래프를 보면 1분위의 그래프 혼자 다른 양상을 보이고 있음을 알 수 있다.
+다른 분위의 그래프들이 모두 50대에 가장 높은 주택 소유율을 보이고 그 이후 급격히 하락하는데 반해, 1분위는 60대에 가장 높은 주택 소유율을 보이고 70대까지 서서히 하락한 뒤, 80대이상에서 급격히  하락한다.
+우선, 모든 분위에서 80대이상일 때 그래프가 급격히 하락하는 것은 80대 이상의 인구수가 작기 때문이라고 해석할 수 있다.
+그리고 1분위에서의 독특한 양상은 1분위에서 주택을 소유하기까지 상대적으로 더 많이 걸린다고 해석할 수 있다. 이는 30대에서 40대로 넘어갈 때 다른 분위에 비해 증가율이 낮다는 점을 통해서도 추론할 수 있다.
+
+
+
+#### **Graph3. 분위별/거주지역별 주택소유 가구수 비율에 대한 분석**
+
+이 분석을 위한 데이터는 *통계청 홈페이지*에서 다운받았다.
+
+
+분위별 비교를 위해 총계를 제거한 데이터를 이용해 그래프를 그렸다.
+```{r}
+households4 <- read.csv(file="분위별 거주지역별 주택소유 가구수 비율.csv", header=TRUE)    
+households4_Nototal <- filter(households4,households4$주택자산.10분위별!="총계")
+```
+
+
+거주지역과 분위별로 주택소유 가구수 비율이 어떻게 다른지 알아보기 위해 점그래프에서 비율에 따라 점의 크기가 달라지도록 하였다.
+
+```{r}
+a <- ggplot(households4_Nototal, aes(x=거주지역별 , y=주택자산.10분위별)) +
+  geom_point(aes(col=거주지역별, size=X2019.년)) + 
+  scale_y_discrete(limit=c("1분위(하위10%)",
+                           "2분위",
+                           "3분위",
+                           "4분위",
+                           "5분위",
+                           "6분위",
+                           "7분위",
+                           "8분위",
+                           "9분위",
+                           "10분위(상위10%)")) +
+  labs(title="2019년 거주지역/분위별 주택소유 가구수 비율",y="분위",x="거주지역", size="주택소유비율(%)",caption="통계청")
+
+a + theme(axis.text.x=element_text(size=6, face="bold")) +
+  guides(col=F)
+```
+
+
+
+각각의 거주지역에 따라 분위별로 주택소유 가구수 비율이 변화하는 양상을 확인할 수 있게 분위 순서대로 y축을 배치하였고, 주택소유비율을 점의 크기로 나타내었다.
+
+
+**이 그래프를 통해 알 수 있는 내용은 다음과 같다.**
+
+>이 그래프에는 몇가지 특이점들이 존재한다. 먼저, 분위가 높아질수록 주택소유비율이 높을 것이라는 보편적인 생각과 다른 결과를 보이는 지역들이 존재한다. 강원도와 충청북도 등은 낮은 분위일수록 더 높은 주택소유비율을 보여주고 있다. 이는 높은 분위에 해당하는 가구수가 적다는 것으로 해석할 수 있으며, 이는 높은 분위에 해당하는 가구가 서울 등 도심지역에 몰려있음을 간접적으로 보여준다.
+두번째로, 이 그래프에서 세종특별자치시를 자세히 살펴보면, 6분위 이하의 수가 매우 작아 0%로 표기된다는 점을 알 수 있다. 이는 다른 지역에 비해 6분위 이하 가구 수가 적다는 것과, 6분위 이하 가구의 경우 대부분 무주택이라는 것을 나타낸다. 세종시의 경우 형성된지 얼마되지 않은 신도시이고, 여러 정부부처들이 위치해있기 때문에 공무원이 속한 가구가 많기 때문일 것이다. 위 그래프는 세종시의 이와같은 특징을 증명하고 있다.
+
+
+
+#### **Graph4. 거주지역/성/연령대별 주택소유 가구수 비율에 대한 분석**
+
+이 분석을 위한 데이터는 *통계청 홈페이지*에서 다운받았다.
+
+
+서울특별시와 세종특별자치시에서 연령별 가구수 비율 어떻게 다른지 비교하기 위해 데이터 중 일부분만을 추출하였다. 또한, 숫자임에도 숫자로 인식되지 않는 부분을 integer로 바꾸었다.
+```{r}
+households2 <- read.csv(file="거주지역 성 연령대별 주택소유 가구수.csv", header=TRUE)
+households2 <- households2[households2$성별=="총계",]
+households2 <- filter(households2,households2$연령대별!="총계")
+
+households3_1 <- filter(households2, households2$거주지역별=="서울특별시")
+for(i in 6:10) {
+  households3_1[,i] <- as.integer(households3_1[,i])
+}
+households3_2 <- filter(households2, households2$거주지역별=="세종특별자치시")
+for(i in 6:10) {
+  households3_2[,i] <- as.integer(households3_2[,i])
+}
+```
+
+
+서울시와 세종시의 연령대별 주택소유 가구수 비율을 한눈에 확인할 수 있도록 롤리팝 그래프를 활용하였다.
+```{r}
+gg1 <- ggplot(households3_1, aes(x=연령대별, y=X2019.년)) +
+  geom_point(size=5) + 
+  geom_segment(aes(xend=연령대별, yend=0)) +
+  scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+  labs(title="2019년 서울 연령별 주택소유 가구수",y="주택소유가구수",x="연령대별", caption="통계청") +
+  theme_classic()
+gg2 <- ggplot(households3_2, aes(x=연령대별, y=X2019.년)) +
+  geom_point(size=5) + 
+  geom_segment(aes(xend=연령대별, yend=0)) +
+  scale_x_discrete(limit=c("30세미만",
+                           "30~39세",
+                           "40~49세",
+                           "50~59세",
+                           "60~69세",
+                           "70~79세",
+                           "80세이상")) +
+  labs(title="2019년 세종 연령별 주택소유 가구수",y="주택소유가구수",x="연령대별", caption="통계청") +
+  theme_classic()
+
+gridExtra::grid.arrange(gg1,gg2, ncol=2, nrow=1)
+```
+
+
+
+서울시와 세종시의 주택소유 가구수가 차이가 나지만, 이 그래프를 통해 연령대별로 변화하는 양상을 비교할 수 있다.
+
+
+**이 그래프를 통해 알 수 있는 내용은 다음과 같다.**
+
+
+>위 그래프에서는 서울과 세종의 연령대별 주택 소유 가구수 비율의 변화 양상이 다른 것을 확인할 수 있다. 서울시는 50대에서 가장 높고, 이후 급격히 감소하는 것에 반해, 세종시는 40대에서 가장 높고, 이후 급격히 감소한다. 또한, 서울시는 위로 볼록 형태로 감소하는 것에 비해 세종시에서 아래로 볼록 형태로 감소하고 있다. 이런 그래프의 특징들은 세종시의 인구가 상대적으로 서울시에 비해 젊다는 점을 보여준다.
+
+
+####  **Graph5. DMB재난경보 발령 현황 분석**
+
+이 분석을 위한 데이터는 *공공데이터포털*에서 다운받았다.
+
+먼저, 데이터를 불러오고, 그래프를 그리기 좋은 데이터프레임을 구성하였다.
+```{r}
+DMB <- read.csv(file="DMB재난경보방송발령현황(2019년).csv", header=TRUE)
+unique <- unique(DMB$재난종류)
+num <- vector()
+for(i in 1:length(unique)){
+  DMB_1 <- filter(DMB,DMB$재난종류==unique[i])
+  num_1 <- nrow(DMB_1)
+  num <- c(num, num_1)
+}
+df <- data.frame(unique,num)
+```
+
+어떤 재난경보가 많이 울리고, 어떤재난경보가 적게 울리는지 한눈에 파악하기 쉽도록 원그래프를 그려보았다.
+
+```{r}
+ggplot(df, aes(x="", y=num, fill=unique)) +
+  geom_bar(stat="identity", width=1, col="black") +
+  coord_polar(theta="y") +
+  labs(fill="재난종류", 
+       x=NULL, 
+       y=NULL, 
+       title="재난종류별 재난경보 발령 횟수", 
+       caption="공공데이터포털") +
+  theme(title = element_text(size=11, face="bold"))
+```
+
+
+원그래프의 각 부분의 면적을 보고 바로 어떤 종류의 재난 경보가 많이 울리는지 알 수 있도록 하였다. 그리고 각 부분을 구분하는 선을 추가하여 비슷한 색상들이 헷갈리지 않도록 하였다. 
+
+
+**이를 통해 알 수 있는 내용은 다음과 같다.**
+
+> 위 그래프를 통해 우리나라에서는 호우 경보가 가장 많이 발령된다는 사실을 알 수 있다. 이는 우리나라의 기상 특성 상 비가 매시기에 고루 내리는 것이 아니라 여름에만 집중적으로 내리기 때문이다. 특히 여름에는 태풍과 장마로 인해 비가 일정기간 계속해서 내리는 것이 매우 일반적이라는 사실을 잘 보여준다.
+
+
+
+####  **Graph6. 중국/일본과의 무역 현황 분석**
+
+이 분석을 위한 데이터는 *공공데이터포털*에서 다운받았다.
+
+
+우리나라가 중국, 일본과 무역을 할 경우 어떤 차이가 존재하는지 알아보기 위해 전체 국가에 대한 데이터 중에서 중국에 대한 데이터와 일본에 대한 데이터를 따로 추출하였다. 그리고 무역수지가 0보다 커서 흑자인 경우와 0보다 작아서 적자인 경우를 분리하였다.
+```{r}
+port <- read.csv(file="품목별 국가별 수출입실적.csv", header=T)
+port[,9] <- as.integer(gsub(",","",port[,9]))
+
+port_china <- filter(port, port$국가명=="중국")
+port_japan <- filter(port, port$국가명=="일본")
+
+port_china$흑적자 <- ifelse(port_china$무역수지 < 0, "below", "above")
+port_japan$흑적자 <- ifelse(port_japan$무역수지 < 0, "below", "above")
+```
+
+
+무역수지가 0일 때를 기준으로 각 품목별 무역수지를 비교해보았다.
+
+```{r}
+ggg1 <- ggplot(port_china, aes(x=품목명, y=무역수지, label=무역수지)) + 
+  geom_bar(stat='identity', aes(fill=흑적자), width=.5) +
+  theme(axis.text.y=element_blank()) +
+  coord_flip() +
+  scale_fill_manual(name="흑적자", 
+                    labels = c("흑자", "적자"), 
+                    values = c("above"="#00ba38", "below"="#f8766d")) + 
+  labs(title= "중국무역현황")
+
+ggg2 <- ggplot(port_japan, aes(x=품목명, y=무역수지, label=무역수지)) + 
+  geom_bar(stat='identity', aes(fill=흑적자), width=.5) +
+  theme(axis.text.y=element_blank()) +
+  coord_flip() +
+  scale_fill_manual(name="흑적자", 
+                    labels = c("흑자", "적자"), 
+                    values = c("above"="#00ba38", "below"="#f8766d")) + 
+  labs(title= "일본무역현황")
+
+gridExtra::grid.arrange(ggg1,ggg2, ncol=1, nrow=2)
+```
+
+
+무역수지가 0일 때를 기준으로 흑자인 경우에는 초록색으로, 적자인 경우에는 붉은색으로 표현하여 결과가 더욱 눈에 잘 보이도록 하였고, 중국과 일본을 위아래로 배치함으로써, 중국에 대한 무역과 일본에 대한 무역의 차이를 바로 비교해볼 수 있도록 하였다. 특히, 무역수지가 0인 지점의 위치가 중국과 일본에서 서로 다르다는 점을 통해 차이를 확실히 알 수 있다.
+
+
+**이를 통해 알 수 있는 내용은 다음과 같다.**
+
+> 위 그래프를 통해서 우리나라는 중국과의 무역에서는 흑자를 보고 있는 반면, 일본과의 무역에서는 적자를 보고 있다는 사실을 알 수 있다. 또한, 우리나라가 일본과 중국에 대해 흑자 또는 적자를 보고 있는 품목이 상당한 차이가 있음을 알 수 있다.
+
+
+
+####  **Graph7. 근로복지공단 소속병원 연도별 건강진단 현황**
+
+이 분석을 위한 데이터는 *공공데이터포털*에서 다운받았다.
+
+
+먼저, 불러온 데이터 중 숫자임에도 chr로 인식되는 열들에 대해 다시 숫자로 인식될 수 있도록 하였다. 그리고 데이터를 그래프 그리기에 좋은 형태로 다시 변형하였다.
+```{r}
+examination <- read.csv(file="근로복지공단 소속병원 연도별 건강진단 및 작업환경측정 현황.csv", header=T)
+for(i in 2:4){
+examination[,i] <- as.integer(gsub(",","",examination[,i]))
+}
+examination[,1] <- as.integer(examination[,1])
+
+
+year <- c(examination$년도)
+type <- rep(c("일반검진","특수검진","채용신검"),times=nrow(examination))
+value <- vector()
+for(i in 1:nrow(examination)) {
+  value <- c(value, examination[i,2])
+  value <- c(value, examination[i,3])
+  value <- c(value, examination[i,4])
+}
+data <- data.frame(year,type,value)
+```
+
+
+일반검진, 특수검진, 채용신검의 세 가지로 나뉘어지는 건강진단 중 각각의 비율이 어떻게 변화하는지 알 수 있는 그래프를 그려보았다.
+
+```{r}
+ggplot(data, aes(x=year, y=value, fill=type)) + 
+  geom_area(position = "fill") +
+  scale_fill_brewer(palette="Blues") +
+  theme_classic() +
+  labs(title="건강진단 비율",caption="공공데이터포털",x="년도",y="건강진단비율",fill="진단종류")
+```
+
+
+시기별로 각각의 건강진단이 어떠한 비율로 시행되었는지 파악할 수 있도록 비율그래프로 표현하였다.
+
+
+**이를 통해 알 수 있는 내용은 다음과 같다.**
+
+> 위 그래프를 보면 일정 간격마다 검진비율이 파동처럼 보인다 .어떤 시기는 일반검진의 비율이 채용신검이나 특수검진보다 훨씬 높고, 어떤 시기는 일반검진보다 특수검진의 비율이 훨씬 높다. 이런 변화의 간격이 일정하다는 점을 통해 그래프가 이런 모습을 보이는 이유는 건강진단이 국가에 의해 일정 주기를 가지고 시행되었기 때문이라고 해석할 수 있다. 그리고 그래프를 보면 최근으로 올수록 점점 채용신검의 비율이 높아지는데, 이를 통해 채용신검을 하는 것이 점점 보편화되는 추세라는 것을 알 수 있다.
+
+
+
+####  **Graph8. 근로복지공단 근로복지지원 현황**
+
+이 분석을 위한 데이터는 *공공데이터포털*에서 다운받았다.
+
+
+근로복지공단의 각 지사별로 근로복지지원이 얼마나 이루어지고 있는지 덤벨그래프를 통해 파악해보았다.
+
+```{r}
+laborwelfare <- read.csv(file="근로복지지원현황.csv", header=T)
+
+laborwelfare %>% group_by(기준년월) %>%
+  summarise(최소=min(지원자수),최다=max(지원자수)) %>%
+  ggplot(aes(x=기준년월, y=최다)) + 
+  geom_point(size=3) +
+  geom_point(aes(y=최소), size=3) +
+  geom_segment(aes(xend=기준년월, yend=최소)) +
+  scale_x_continuous(breaks=seq(201901,201910,1)) +
+  coord_flip() +
+  labs(title="근로복지지원 현황",caption="공공데이터포털",x="기준년월",y="지원자수")
+```
+
+
+위 그래프는 2019년 1월부터 10월까지 근로복지공단을 통해 근로복지지원을 받은 지원자수의 최댓값과 최솟값을 강조하기 위해 덤벨그래프로 표현한 것이다.
+
+
+**이를 통해 알 수 있는 내용은 다음과 같다.**
+
+> 위 그래프를 보면, 지원자수 최솟값이 1명인 것에 반해 최대값은 100명 이상인 경우도 있는 것처럼 같은 시기에도 지사별로 지원자수의 편차가 크다는 사실을 알 수 있다.
+
+
+
+####  **Graph9~10. 2014년 대덕구 보궐선거 개표결과**
+
+이 분석을 위한 데이터는 *공공데이터포털*에서 다운받았다.
+
+
+개표결과를 분석할 그래프를 그리기 이전에 필요한 데이터를 변형하였다. chr로 나타나는 정보들을 integer로 바꾸었고, 데이터프레임을 만들었다.
+```{r}
+vote <- read.csv(file="2014년 대덕구 보궐선거 개표결과.csv", header=T)
+for(i in 3:9){
+  vote[,i] <- as.integer(gsub(",","",vote[,i]))
+}
+
+vote <- vote[2:71,]
+vote <- rbind(vote[1:3,],filter(vote,vote$투표구명=="소계"))
+
+vote1 <- select(vote, 읍면동명,새누리당.정용기)
+vote2 <- select(vote, 읍면동명,새정치민주연합.박영순)
+
+person <- c(rep("새누리당 정용기",times=nrow(vote1)))
+vote1 <- cbind(vote1,person)
+person <- c(rep("새정치민주연합 박영순",times=nrow(vote2)))
+vote2 <- cbind(vote2,person)
+
+colnames(vote1) <- c("읍면동명","득표수","후보자")
+colnames(vote2) <- c("읍면동명","득표수","후보자")
+
+vote <- rbind(vote1,vote2)
+```
+
+
+2014년 보궐선거 개표 결과에서 각 후보자가 최종으로 얻은 득표수 뿐만 아니라 지역구마다 얼마나 투표하였는지 한눈에 볼 수 있는 그래프를 그렸다.
+
+```{r}
+ggplot(vote, aes(fill=읍면동명, y=득표수, x=후보자)) + 
+  geom_bar(position="stack", stat="identity",col="black") +
+  labs(title="2014년 대덕구 보궐선거 개표결과",caption="공공데이터포털")
+```
+
+
+
+**이를 통해 알 수 있는 내용은 다음과 같다.**
+
+> 위 그래프를 보면 각 후보자가 얻은 득표수의 총합 뿐만 아니라 각 지역구마다 얼마나 득표하였는지 알 수 있다. 대부분의 지역구에서는 당선자였던 정용기 후보자의 득표수가 더 높았다는 사실을 이 그래프를 통해 알 수 있다.
+
+
+
+
+동일한 데이터를 가지고 다른 형태의 그래프를 그려보았다.
+
+```{r}
+vote <- read.csv(file="2014년 대덕구 보궐선거 개표결과.csv", header=T)
+for(i in 3:9){
+  vote[,i] <- as.integer(gsub(",","",vote[,i]))
+}
+
+vote <- vote[2:71,]
+vote <- rbind(vote[1:3,],filter(vote,vote$투표구명=="소계"))
+gggg1 <- treemap(vote,
+        index="읍면동명",
+        vSize="새누리당.정용기",
+        type="index"
+)
+```
+
+
+**이를 통해 알 수 있는 내용은 다음과 같다.**
+
+> 위 그래프는 Graph9보다 후보자가 각 지역구마다 얼마나 득표하였는지 그 비율에 대해 더욱 자세히 알 수 있다. 따라서 후보자는 다음 선거를 위해 어느 지역을 공략해야 할지 분석하기 위한 자료로 이를 활용할 수 있다.

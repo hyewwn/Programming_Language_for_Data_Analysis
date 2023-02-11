@@ -1,0 +1,218 @@
+#read titanic data
+titanic <- read.csv(file="titanic.csv",header=TRUE)
+#install dplyr
+install.packages("dplyr")
+library("dplyr")
+
+#Q1.
+choose <- select(titanic, Name, Sex, Age, Survived)
+head(choose, n=5)
+
+#Q2.
+uniqueCabin <- select(titanic, Cabin) %>% unique
+noblank <- filter(uniqueCabin, Cabin != "")
+head(noblank, n=5)
+
+#Q3.
+titanic_tib <- as_tibble(titanic)
+Fare_mean <- group_by(titanic_tib,Survived) %>% summarise(mean(Fare))
+Fare_mean
+
+#Q4.
+survive20 <- filter(titanic_tib,Survived==1&Age<=20)
+Class_count <- group_by(survive20,Pclass) %>% summarise(length(Pclass))
+Class_count <- Class_count[order(Class_count$Pclass,decreasing = TRUE),]
+Fare_mean <- group_by(survive20,Pclass) %>% summarise(mean(Fare))
+Fare_mean <- Fare_mean[order(Fare_mean$Pclass,decreasing=TRUE),]
+Class_count
+Fare_mean
+
+#Q5.
+grep_th <- titanic_tib[grep("th",titanic_tib$Name,ignore.case=T),]
+nrow(grep_th)
+head(select(grep_th, PassengerId, Name), n=5)
+
+#Q6.
+Age_mean <- group_by(titanic_tib,Pclass,Sex) %>% summarise(mean(na.omit(Age)))
+Age_mean <- Age_mean[order(Age_mean$`mean(na.omit(Age))`,decreasing=TRUE),]
+Age_mean
+
+#Q7.
+titanic15 <- filter(titanic_tib, Age <=15)
+survive15 <- filter(titanic15,Survived==1)
+
+a <- group_by(titanic15,Pclass) %>% summarise(length(Pclass))
+b <- group_by(survive15,Pclass) %>% summarise(length(Pclass))
+c <- round(b[,2]/a[,2]*100,digit=2)
+
+c <- as.vector(as.matrix(c))
+Pclass <- sort(unique(titanic_tib$Pclass))
+Surv_percentage <- c
+class_surv <- data.frame(Pclass,Surv_percentage)
+class_surv
+
+#Q8.
+no.NA <- na.omit(titanic_tib)
+df.summary <- select(no.NA,Name,Age,Sex,Survived)
+Surv <- function(x) {
+  if(x==0){
+    return("No")
+  }else{
+    return("Yes")
+  }
+}
+Summary <- vector()
+for(i in 1:nrow(df.summary)) {
+  Summary <- c(Summary,paste0('[Name:',df.summary[i,1],' | Age:',df.summary[i,2],' Sex:',df.summary[i,3], ' | Survived:',Surv(df.summary[i,4]),']'))
+}
+Summary <- data.frame(Summary)
+head(Summary,n=5)
+
+#Q9.
+no.NA <- na.omit(titanic_tib)
+Pass_char <- function(x) {
+  v <- vector()
+  for(i in 1:nrow(x)) {
+    if(x[[i,6]]>=30) {
+      if(x[[i,5]]=="male") {
+        v <- c(v,"male_over_30")
+      }else{v <- c(v,"female_over_30")}
+    }else{
+      if(x[[i,5]]=="male") {
+        v <- c(v,"male_under_30")
+      }else{v <- c(v,"female_under_30")}
+    }
+  }
+  return(v)
+}
+
+titanicQ9 <- mutate(no.NA,Passenger_char=Pass_char(no.NA))
+titanicQ9 <- select(titanicQ9,Age,Sex,Passenger_char)
+head(titanicQ9,n=5)
+
+#Q10.
+titanicQ10 <- mutate(no.NA,Passenger_char=Pass_char(no.NA))
+survive <- filter(titanicQ10,Survived==0)
+
+a <- titanicQ10 %>% group_by(Pclass,Passenger_char) %>% summarise(length(Pclass))
+b <- group_by(survive,Pclass,Passenger_char) %>% summarise(length(Pclass))
+c <- round(b[,3]/a[,3]*100,digit=2)
+c <- as.vector(as.matrix(c))
+
+df.Q10 <- select(a,Pclass,Passenger_char)
+df.Q10$Death_percentage <- c
+df.Q10 %>% arrange(desc(Death_percentage))
+
+
+#read wine data, change to dataframe
+redwine <- read.csv("winequality-red.csv",header=F,sep = ";",stringsAsFactors = FALSE)
+whitewine <- read.csv("winequality-white.csv",header=F,sep=";",stringsAsFactors = FALSE)
+
+a <- strsplit(redwine[[1,1]],";")
+b <- a[[1]]
+c <- substr(b,2,nchar(b)-1)
+colnames(redwine) <- c(c)
+redwine <- redwine[-1,]
+for(i in 1:ncol(redwine)) {
+    redwine[,i] <- as.numeric(redwine[,i])
+}
+
+a <- strsplit(whitewine[[1,1]],";")
+b <- a[[1]]
+c <- substr(b,2,nchar(b)-1)
+colnames(whitewine) <- c(c)
+whitewine <- whitewine[-1,]
+for(i in 1:ncol(whitewine)) {
+  whitewine[,i] <- as.numeric(whitewine[,i])
+}
+
+#Q11.
+typered <- c(rep("red",nrow(redwine)))
+redwine <- mutate(redwine,type=typered)
+typewhite <- c(rep("white",nrow(whitewine)))
+whitewine <- mutate(whitewine,type=typewhite)
+
+wine <- rbind(redwine,whitewine)
+
+#Q12.
+#1
+dioxide1 <- select(wine,contains('dioxide'))
+dioxide1
+#2
+dioxide_name <- grep('dioxide',names(wine))
+dioxide2 <- wine[,dioxide_name]
+dioxide2
+
+#Q13.
+densitymean <- mean(wine$density)
+volatile.ac_max <- max(wine$`volatile acidity`)
+wineQ13 <- filter(wine,wine$density>densitymean & wine$`volatile acidity`==volatile.ac_max)
+wineQ13
+
+#Q14.
+wine <- mutate(wine,dioxide_ratio=wine$`free sulfur dioxide`/wine$`total sulfur dioxide`)
+
+#Q15.
+wineQ15 <- wine %>% filter(quality==5)
+fac_max <- max(wineQ15$`fixed acidity`)
+fac_min <- min(wineQ15$`fixed acidity`)
+
+wineQ15 <- wineQ15 %>%
+  filter(wineQ15$`fixed acidity`==fac_max | wineQ15$`fixed acidity`==fac_min) %>%
+  mutate(fac_max) %>%
+  mutate(fac_min) %>%
+  arrange(desc(`fixed acidity`)) %>%
+  select(`fixed acidity`,`volatile acidity`,fac_max,fac_min)
+wineQ15
+
+#Q16.
+quality_f<- function(x) {
+  quality_level <- vector()
+  for(i in 1:nrow(x)) {
+    if(x[[i,12]]<6) {
+      quality_level <- c(quality_level,"Low Quality")
+    }else if(x[[i,12]]<=7&x[[i,12]]>=6) {
+      quality_level <- c(quality_level,"Medium Quality")
+    }else {
+      quality_level <- c(quality_level,"High Quality")
+    }
+  }
+  return(quality_level)
+}
+
+wine <-  mutate(wine, quality_level=quality_f(wine))
+wineQ16 <- wine %>% group_by(quality_level) %>% summarise(mean(`residual sugar`))
+
+wineQ16
+
+#Q17.
+names(wine)[ncol(wine)] <- c("qlabel")
+
+wine$qlabel <- gsub("Low Quality", "L", wine$qlabel)
+wine$qlabel <- gsub("Medium Quality", "M", wine$qlabel)
+wine$qlabel <- gsub("High Quality", "H", wine$qlabel)
+
+#Q18.
+wineQ18 <- group_by(wine,qlabel) %>% summarise(mean(pH),mean(`citric acid`))
+wineQ18
+
+#Q19.
+red <- wine %>% filter(wine$type=="red")
+white <- wine %>% filter(wine$type=="white")
+
+n_qlabel_red <- group_by(red,qlabel) %>% summarise(length(qlabel))
+ratio_qlabel_red <- n_qlabel_red[,2]/nrow(red)
+n_qlabel_white <- group_by(white,qlabel) %>% summarise(length(qlabel))
+ratio_qlabel_white <- n_qlabel_white[,2]/nrow(white)
+wine_ratio <- mutate(n_qlabel_red, red_ratio=ratio_qlabel_red)
+wine_ratio <- mutate(wine_ratio, white_ratio=ratio_qlabel_white)
+
+wine_ratio <- wine_ratio[,-2]
+
+wine_ratio
+
+#Q20.
+wine <- mutate(wine, acid_mean=(wine$`volatile acidity`+wine$`citric acid`)/2)
+wineQ20 <- filter(wine, dioxide_ratio>acid_mean)
+
+head(wineQ20,n=5)

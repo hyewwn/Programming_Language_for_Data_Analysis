@@ -1,0 +1,184 @@
+<<number1>>
+#v*1 ~ v*9까지 계산하는 함수
+multiply <- function(v) {
+  for (i in (1:9)) {
+    n <- v * i
+    c <- cat(v, "*", i, "=", n, "\n")
+  }
+  return(c)
+}
+
+#구구단 출력함수 생성
+multiply_table <- function() {
+  for (k in (1:9)) {
+  cat("\n","This is the table", k, "\n")
+  multiply(k)
+  }
+}
+
+#구구단 출력
+multiply_table()
+
+
+<<number2>>
+i <- 0
+m <- 0
+for(k in (1:100)) {
+  if(i<250) {
+    m <- k
+    i <- i + m 
+    }
+  
+}
+cat("합은", i, "이고, 마지막으로 더해진 수는", m, "이다.")
+
+<<number3>>
+top <- c("후드티", "체크셔츠", "줄무늬셔츠", "니트", "파자마상의")
+bottom <- c("청바지", "슬랙스", "트레이닝바지", "면바지", "파자마하의")
+
+cat("가능한 나의 선택지는 아래와 같습니다")
+
+pickcloth <- function() {
+  i <- 1
+  k <- 1
+  while(top[i]!=top[5]) {
+    while(bottom[k] != bottom[5]) {
+      cat(top[i],"와",bottom[k], "를 고르셨습니다.", "\n")
+      k <- k+1
+    }
+    k <- 1
+    i <- i+1
+  }
+  while(top[i]==top[5]) {
+    while(bottom[k] != bottom[5]) {
+      cat(top[i],"와",bottom[k], "를 고르셨습니다. 다시 골라주세요!", "\n")
+      k <- k+1
+    }
+    i <- 1
+  }
+  while(bottom[k]==bottom[5]) {
+    while(top[i] != top[5]) {
+      cat(top[i],"와",bottom[k], "를 고르셨습니다. 다시 골라주세요!", "\n")
+      i <- i+1
+    }
+    k <- 1
+  }
+  i <- 5
+  k <- 5
+  while(bottom[k]==bottom[5]) {
+    while(top[i] == top[5]) {
+      cat(top[i],"와",bottom[k], "를 고르셨습니다.", "\n")
+      i <- 1
+    }
+    k <- 1
+  }
+}
+
+pickcloth()
+
+<<number4>>
+m <- 0
+for(i in (1:100)) {
+  if(i%%6 == 0) {
+    m <- m+1
+  }
+}
+cat("1부터 100까지 6의 배수는", m, "개이다.")
+
+<<number5>>
+x <- c(1:5)
+mat <- matrix(0, nrow=5, ncol=5)
+mat
+for(i in x) {
+  for(j in x) {
+    mat[i,j] <- abs(i-j)
+  }
+}
+mat
+
+<<number6>>
+x <- c(1:5)
+for (i in x) {
+  a <- rep('"*"', i)
+  cat(a, "\n")
+}
+
+
+<<number7>>
+v <- c(1,2,3,4)
+for (i in (1:4)) {
+  v[i] <- i^3
+}
+v
+
+<<number8>>
+vec <- c(0,1,0,1,0,0,0,0,0,1,1,1)
+a <- length(vec)
+m <- 0
+n <- 0
+for(i in (1:a)) {
+  if(vec[i]==0) {
+    m <- m+1
+  } else{
+    n <- n+1
+  }
+}
+cat("0의 개수는", m, ", 1의 개수는", n)
+
+<<number9>>
+i <- 1
+k <- 1
+v <- vector()
+repeat{
+  v <- c(v,k)
+  v <- c(v,i)
+  k <- i + k
+  i <- i + k
+  if (k >= 377) break
+}
+print(v)
+
+
+<<number10>>
+sentence <- "데/이/터/사/이/언/스"
+wrong_sentence <- "테/이/어/사/이/언/스"
+sentence_letter <- strsplit(sentence,"/")
+wrong_sentence_letter <- strsplit(wrong_sentence, "/")
+m <- 0
+v <- vector()
+a <- unlist(sentence_letter)
+b <- unlist(wrong_sentence_letter)
+
+repeat {
+ m <- m+1
+ v <- c(v, subset(m, a[m] != b[m]))
+ if(m>=length(a)) break
+}
+
+cat(v, "번째 글자가 틀렸습니다. '데이터사이언스'로 다시 입력하세요.")
+
+<<number11>>
+A <- list(100, -0.009, 3, -30, -0.10)
+B <- list(-20, 2, -0.9, 0.085, 5)
+
+v <- vector()
+for(i in (1:length(A))) {
+  for(j in (1:length(B))) {
+    v <- c(v, A[[i]]+B[[j]])
+    v <- c(v, A[[i]]-B[[j]])
+    v <- c(v, A[[i]]*B[[j]])
+    v <- c(v, A[[i]]/B[[j]])
+    v <- c(v, B[[j]]/A[[i]])
+  }
+}
+v
+max(v)
+
+<<number12>>
+i <- 0
+while(i<=10) {
+  cat(i, "! =", factorial(i), "\n")
+  i <- i+1
+}
+
+
